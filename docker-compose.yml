@@ -207,21 +207,17 @@ services:
   wyl:
     image: aceberg/watchyourlan
     container_name: wyl
-    network_mode: host        
-    restart: always
-    ports:
-      - 8850:8850
+    network_mode: "host"        
+    restart: unless-stopped
     volumes:
-      - /mediaserver/docker/wyl:/data/WatchYourLAN
+    - /mediaserver/docker/wyl:/data/WatchYourLAN
     environment:
-      - TZ=Europe/Bucharest    
-      - HOST=192.168.2.79
-      - IFACES=enp4s0 wlxf4ec3892dd51  # required: 1 or more interface
-      #HOST: "192.168.2.79"                   # optional, default: 0.0.0.0
-      #- PORT= 8840                      # optional, default: 8840
-      #TIMEOUT: "120"                    # optional, time in seconds, default: 120
-      #SHOUTRRR_URL: ""                  # optional, set url to notify
-      #THEME: "sand"                     # optional
-      #COLOR: "dark"                     # opti
-  
- 
+      TZ: Europe/Bucharest              # required: needs your TZ for correct time
+      IFACES: "eno1"  # required: 1 or more interface
+      HOST: "192.168.2.79"                   # optional, default: 0.0.0.0
+      PORT: "8840"                      # optional, default: 8840
+      TIMEOUT: "120"                    # optional, time in seconds, default: 120
+      SHOUTRRR_URL: ""                  # optional, set url to notify
+      THEME: "sand"                     # optional
+      COLOR: "dark"                     # optional
+
