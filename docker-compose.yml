@@ -210,7 +210,7 @@ services:
     network_mode: "host"        
     restart: unless-stopped
     volumes:
-    - /mediaserver/docker/wyl:/data/WatchYourLAN
+      - /mediaserver/docker/wyl:/data/WatchYourLAN
     environment:
       TZ: Europe/Bucharest              # required: needs your TZ for correct time
       IFACES: "eno1"  # required: 1 or more interface
