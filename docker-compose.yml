@@ -1,0 +1,257 @@
+#version: "3.7"
+networks:
+  default:
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+      #- JELLYFIN_PublishedServerUrl=http://192.168.2.79 #optional
+      - DOCKER_MODS=linuxserver/mods:jellyfin-opencl-intel-24.35.30872.22
+    networks:
+      - default
+    volumes:
+      - /home/mladutz/mediaserver/jellyfin/config:/config
+      - /home/mladutz/mediaserver/media:/mediaserver/media
+        #- /home/mladutz/mediaserver/media/Movies:/mediaserver/media
+    devices:
+      - /dev/dri:/dev/dri 
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    ports:
+      - 8096:8096
+      #- 8920:8920 #optional
+      - 7359:7359/udp #optional
+      #- 1900:1900/udp #optional
+    restart: always
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+
+   # https://hub.docker.com/r/linuxserver/prowlarr
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    networks:
+      - default
+    ports:
+      - 9696:9696
+    restart: always
+    volumes:
+      - /home/mladutz/mediaserver/prowlarr:/config
+      - /home/mladutz/mediaserver:/mediaserver
+
+  # https://docs.linuxserver.io/images/docker-nzbget
+  nzbget:
+    image: lscr.io/linuxserver/nzbget:latest
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    networks:
+      - default
+    ports:
+      - 6789:6789
+    volumes:
+      - /home/mladutz/mediaserver/nzbget:/config
+      - /home/mladutz/mediaserver/downloads:/downloads"
+
+  # https://docs.linuxserver.io/images/docker-sonarr
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+      #restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    networks:
+      - default
+    ports:
+      - 8989:8989
+    restart: always
+    volumes:
+      - /home/mladutz/mediaserver/sonarr:/config
+      #- /home/mladutz/mediaserver/downloads:/downloads
+      - /home/mladutz/mediaserver:/mediaserver
+    links:
+      - nzbhydra
+      - nzbget
+
+  # https://docs.linuxserver.io/images/docker-radarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    networks:
+      - default
+    ports:
+      - 7878:7878
+    volumes:
+      - /home/mladutz/mediaserver/radarr:/config
+        #- /home/mladutz/mediaserver/downloads:/downloads
+      - /home/mladutz/mediaserver:/mediaserver
+    links:
+      - nzbhydra
+      - nzbget
+
+  # https://docs.linuxserver.io/images/docker-nzbhydra
+  nzbhydra:
+    image: lscr.io/linuxserver/nzbhydra2:latest
+    restart: always
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    networks:
+      - default
+    ports:
+      - 5076:5076
+    volumes:
+      - /home/mladutz/mediaserver/nzbhydra:/config
+      - /home/mladutz/mediaserver/downloads:/downloads
+
+ 
+  # https://hub.docker.com/r/netdata/netdata
+#  netdata:
+#    image: netdata/netdata:v1.47.1@sha256:9aec543d8da83ff68da5032ed01b862ca96e55e3b20ab6ca98f95cab2e8ea255
+#    restart: unless-stopped
+#    hostname: ${NETDATA_HOST}
+#    environment:
+#      PGID: ${DOCKER_PGID}
+#      TZ: ${TZ}
+#    cap_add:
+#      - SYS_PTRACE
+ #   security_opt:
+#      - apparmor:unconfined
+#    volumes:
+#      - /etc/passwd:/host/etc/passwd:ro
+#      - /etc/group:/host/etc/group:ro
+#      - /proc:/host/proc:ro
+#      - /sys:/host/sys:ro
+#      - /var/run/docker.sock:/var/run/docker.sock:ro
+#    networks:
+#      - default
+
+
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
+    volumes:
+      - /home/mladutz/mediaserver/qbittorrent/appdata:/config
+      - /home/mladutz/mediaserver/downloads:/mediaserver/downloads #optional
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+    restart: always
+
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=Europe/Bucharest
+        #- PORT=5055 #optional
+    ports:
+      - 5055:5055
+    volumes:
+      - /home/mladutz/mediaserver/jellyseerr:/app/config
+      - /home/mladutz/mediaserver:/mediaserver  
+    restart: always
+    
+  dokemon:
+    image: productiveops/dokemon:latest
+    container_name: dokemon
+    restart: always
+    ports:
+      - 9090:9090
+    volumes:
+      - /home/mladutz/dokemondata:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+#volumes:
+ # dokemondata: {}
+    
+
+  wyl:
+    image: aceberg/watchyourlan
+    container_name: wyl
+    network_mode: host        
+    restart: always
+    ports:
+      - 8850:8850
+    volumes:
+      - /home/mladutz/mediaserver/wyl:/data/WatchYourLAN
+    environment:
+      - TZ=Europe/Bucharest    
+      - HOST=192.168.2.79
+      #- IFACES=enp4s0 wlxf4ec3892dd51  # required: 1 or more interface
+      #HOST: "192.168.2.79"                   # optional, default: 0.0.0.0
+      #- PORT= 8840                      # optional, default: 8840
+      #TIMEOUT: "120"                    # optional, time in seconds, default: 120
+      #SHOUTRRR_URL: ""                  # optional, set url to notify
+      #THEME: "sand"                     # optional
+      #COLOR: "dark"                     # opti
+  
+  navidrome:
+    image: deluan/navidrome:latest
+      #user: 1000:1000 # should be owner of volumes
+    ports:
+      - 4533:4533
+    restart: always
+    container_name: navidrome  
+    environment:
+      # Optional: put your config options customization here. Examples:
+      ND_SCANSCHEDULE: 1h
+      ND_LOGLEVEL: info
+      ND_SESSIONTIMEOUT: 24h
+      ND_BASEURL: ""
+    volumes:
+      - /home/mladutz/mediaserver/navidrome:/data
+      - /home/mladutz/mediaserver:/mediaserver 
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Bucharest
+    volumes:
+      - /home/mladutz/mediaserver/lidarr:/config
+        #- /home/mladutz/mediaserver/media/music:/music #optional
+      - /home/mladutz/mediaserver/:/mediaserver #optional
+    ports:
+      - 8686:8686
+    restart: always   
+  
+  lidatube:
+    image: thewicklowwolf/lidatube:latest
+    container_name: lidatube
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /home/mladutz/mediaserver/lidatube:/config
+      - /home/mladutz/mediaserver/media/music:/lidatube/downloads
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 5000:5000
+    restart: unless-stopped
