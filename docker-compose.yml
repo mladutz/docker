@@ -15,9 +15,9 @@ services:
     networks:
       - default
     volumes:
-      - /home/mladutz/mediaserver/jellyfin/config:/config
-      - /home/mladutz/mediaserver/media:/mediaserver/media
-        #- /home/mladutz/mediaserver/media/Movies:/mediaserver/media
+      - /mediaserver/docker/jellyfin/:/config
+      - /mediaserver/media:/mediaserver/media
+      # exemple: -/docker/appdata/radarr:/config   si    - /data:/data
     devices:
       - /dev/dri:/dev/dri 
       - /dev/dri/renderD128:/dev/dri/renderD128
@@ -43,9 +43,8 @@ services:
       - 8989:8989
     restart: always
     volumes:
-      - /home/mladutz/mediaserver/sonarr:/config
-      #- /home/mladutz/mediaserver/downloads:/downloads
-      - /home/mladutz/mediaserver:/mediaserver
+      - /mediaserver/docker/sonarr:/config
+      - /mediaserver:/mediaserver
     links:
       - nzbhydra
       - nzbget
@@ -62,9 +61,8 @@ services:
     ports:
       - 7878:7878
     volumes:
-      - /home/mladutz/mediaserver/radarr:/config
-        #- /home/mladutz/mediaserver/downloads:/downloads
-      - /home/mladutz/mediaserver:/mediaserver
+      - /mediaserver/docker/radarr:/config  
+      - /mediaserver:/mediaserver
     links:
       - nzbhydra
       - nzbget
@@ -77,9 +75,8 @@ services:
       - PGID=1000
       - TZ=Europe/Bucharest
     volumes:
-      - /home/mladutz/mediaserver/lidarr:/config
-        #- /home/mladutz/mediaserver/media/music:/music #optional
-      - /home/mladutz/mediaserver/:/mediaserver #optional
+      - /mediaserver/docker/lidarr:/config
+      - /mediaserver/:/mediaserver
     ports:
       - 8686:8686
     restart: always   
@@ -98,8 +95,8 @@ services:
       ND_SESSIONTIMEOUT: 24h
       ND_BASEURL: ""
     volumes:
-      - /home/mladutz/mediaserver/navidrome:/data
-      - /home/mladutz/mediaserver:/mediaserver 
+      - /mediaserver/docker/navidrome:/data
+      - /mediaserver/media:/mediaserver/media 
 
   lidatube:
     image: thewicklowwolf/lidatube:latest
@@ -108,8 +105,8 @@ services:
       - PUID=1000
       - PGID=1000
     volumes:
-      - /home/mladutz/mediaserver/lidatube:/config
-      - /home/mladutz/mediaserver/media/music:/lidatube/downloads
+      - /mediaserver/docker/lidatube:/config
+      - /mediaserver/media/music:/lidatube/downloads
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 5000:5000
@@ -125,8 +122,8 @@ services:
     ports:
       - 5055:5055
     volumes:
-      - /home/mladutz/mediaserver/jellyseerr:/app/config
-      - /home/mladutz/mediaserver:/mediaserver  
+      - /mediaserver/docker/jellyseerr:/config
+      - /mediaserver:/mediaserver  
     restart: always
     
   prowlarr:
@@ -141,8 +138,8 @@ services:
       - 9696:9696
     restart: always
     volumes:
-      - /home/mladutz/mediaserver/prowlarr:/config
-      - /home/mladutz/mediaserver:/mediaserver
+      - /mediaserver/docker/prowlarr:/config
+      - /mediaserver:/mediaserver
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
@@ -154,8 +151,8 @@ services:
       - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
     volumes:
-      - /home/mladutz/mediaserver/qbittorrent/appdata:/config
-      - /home/mladutz/mediaserver/downloads:/mediaserver/downloads #optional
+      - /mediaserver/docker/qbittorrent:/config
+      - /mediaserver/downloads:/mediaserver/downloads 
     ports:
       - 8080:8080
       - 6881:6881
@@ -174,8 +171,8 @@ services:
     ports:
       - 6789:6789
     volumes:
-      - /home/mladutz/mediaserver/nzbget:/config
-      - /home/mladutz/mediaserver/downloads:/downloads"
+      - /mediaserver/docker/nzbget:/config
+      - /mediaserver/usenet:/mediaserver/usenet
 
   nzbhydra:
     image: lscr.io/linuxserver/nzbhydra2:latest
@@ -189,8 +186,8 @@ services:
     ports:
       - 5076:5076
     volumes:
-      - /home/mladutz/mediaserver/nzbhydra:/config
-      - /home/mladutz/mediaserver/downloads:/downloads
+      - /mediaserver/docker/nzbhydra:/config
+      - /mediaserver/usenet:/mediaserver/usenet
   
   dokemon:
     image: productiveops/dokemon:latest
@@ -199,7 +196,7 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - /home/mladutz/dokemondata:/data
+      - mediaserver/docker/dokemondata:/data
       - /var/run/docker.sock:/var/run/docker.sock
 
   wyl:
@@ -210,11 +207,11 @@ services:
     ports:
       - 8850:8850
     volumes:
-      - /home/mladutz/mediaserver/wyl:/data/WatchYourLAN
+      - /mediaserver/docker/wyl:/data/WatchYourLAN
     environment:
       - TZ=Europe/Bucharest    
       - HOST=192.168.2.79
-      #- IFACES=enp4s0 wlxf4ec3892dd51  # required: 1 or more interface
+      - IFACES=enp4s0 wlxf4ec3892dd51  # required: 1 or more interface
       #HOST: "192.168.2.79"                   # optional, default: 0.0.0.0
       #- PORT= 8840                      # optional, default: 8840
       #TIMEOUT: "120"                    # optional, time in seconds, default: 120
